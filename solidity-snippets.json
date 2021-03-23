@@ -1,0 +1,13 @@
+{
+	".source.solidity": {
+		"sdpx license": {
+			"prefix": "sdpx", 
+			"body": "// SPDX-License-Identifier: MIT",
+			"description": "SDPX License"
+		},
+		"pragma solidity":{
+			"prefix": "pragm",
+			"body": "pragma solidity ${1:version};"
+		}
+    }
+}

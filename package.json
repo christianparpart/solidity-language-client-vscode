@@ -1,14 +1,14 @@
 {
-	"name": "lsp-sample",
-	"description": "A language server for Solidity",
+	"name": "solidity",
+	"description": "A language client for Solidity using compiler's builtin language server.",
 	"author": "Solidity Compiler Developers",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ethereum/solidity-lsp-vscode"
 	},
-	"publisher": "vscode-samples",
+	"publisher": "ethereum",
 	"categories": [],
 	"keywords": [
 		"solidity"
@@ -17,21 +17,47 @@
 		"vscode": "^1.43.0"
 	},
 	"activationEvents": [
-		"onLanguage:plaintext"
+		"onLanguage:solidity"
 	],
 	"main": "./client/out/extension",
 	"contributes": {
+		"grammars": [
+			{
+				"language": "solidity",
+				"scopeName": "source.solidity",
+				"path": "./solidity-syntax.json"
+			}
+		],
+		"languages": [
+			{
+				"id": "solidity",
+				"extensions": [
+					".sol"
+				],
+				"aliases": [
+					"Solidity",
+					"solidity"
+				],
+				"configuration": "./solidity-configuration.json"
+			}
+		],
 		"configuration": {
 			"type": "object",
-			"title": "Example configuration",
+			"title": "Solidity Language Server Configuration",
 			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
+				"Solidity.solc.path": {
 					"scope": "resource",
-					"type": "number",
-					"default": 100,
-					"description": "Controls the maximum number of problems produced by the server."
+					"type": ["string", "null"],
+					"default": "solc",
+					"description": "Path to native solc executable."
 				},
-				"languageServerExample.trace.server": {
+				"Solidity.solc.logpath": {
+					"scope": "resource",
+					"type": ["string", "null"],
+					"default": null,
+					"description": "Path to log file that solc's language server mode should write to."
+				},
+				"Solidity.trace.server": {
 					"scope": "window",
 					"type": "string",
 					"enum": [

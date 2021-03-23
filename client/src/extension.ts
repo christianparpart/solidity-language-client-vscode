@@ -1,48 +1,70 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-
 import * as path from 'path';
+import * as vscode from 'vscode';
 import { workspace, ExtensionContext } from 'vscode';
 
 import {
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
-	TransportKind
+	Trace,
+	TransportKind,
 } from 'vscode-languageclient';
 
 let client: LanguageClient;
 
-export function activate(context: ExtensionContext) {
-	// The server is implemented in node
-	let serverModule = context.asAbsolutePath(
-		path.join('server', 'out', 'server.js')
-	);
-	// The debug options for the server
-	// --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-	let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
+interface SoliditySettings {
+    // option for backward compatibilities, please use "linter" option instead
+    solcPath: string | null;
+	linter: boolean | string;
+    enabledAsYouTypeCompilationErrorCheck: boolean;
+    compileUsingLocalVersion: string;
+    compileUsingRemoteVersion: string;
+    nodemodulespackage: string;
+    defaultCompiler: string;
+    soliumRules: any;
+    solhintRules: any;
+    validationDelay: number;
+    packageDefaultDependenciesDirectory: string;
+    packageDefaultDependenciesContractsDirectory: string;
+}
+
+interface Settings {
+    solidity: SoliditySettings;
+}
+
+export function activate(context: ExtensionContext)
+{
+	let config = vscode.workspace.getConfiguration('Solidity');
+	let solcPath = config.get<string>("solc.path");
+	let solcLogPath = config.get<string>("solc.logpath");
+	let traceServer = config.get<string>("trace.server");
+
+	const builtinSolcPath = context.extensionPath + '/libexec/solc-linux64';
+
+	if (solcPath == null || solcPath.trim() == '')
+		solcPath = builtinSolcPath;
+
+	console.log("Using solc binary: " + solcPath);
+	
+	let solcArgs = [];
+	solcArgs.push('--lsp');
+	if (solcLogPath != null && solcLogPath.trim() != '')
+	{
+		solcArgs.push('--lsp-trace');
+		solcArgs.push(solcLogPath);
+	}
 
 	// If the extension is launched in debug mode then the debug server options are used
 	// Otherwise the run options are used
-	// let myServerOptions: ServerOptions = {
-	// 	run:   { transport: TransportKind.stdio, command: "foo"},
-	// 	debug: { transport: TransportKind.stdio, command: "foo", args: [ "--debug" ] }
-	// };
 	let serverOptions: ServerOptions = {
-		run: { module: serverModule, transport: TransportKind.ipc },
-		debug: {
-			module: serverModule,
-			transport: TransportKind.ipc,
-			options: debugOptions
-		}
+		run:   { transport: TransportKind.stdio, command: solcPath, args: solcArgs },
+		debug: { transport: TransportKind.stdio, command: solcPath, args: solcArgs }
 	};
 
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
 		// Register the server for plain text documents
-		documentSelector: [{ scheme: 'file', language: 'plaintext' }],
+		documentSelector: [{ scheme: 'file', language: 'solidity' }],
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
@@ -51,11 +73,14 @@ export function activate(context: ExtensionContext) {
 
 	// Create the language client and start the client.
 	client = new LanguageClient(
-		'languageServerExample',
-		'Language Server Example',
+		'SoliditylanguageServer',
+		'Solidity Language Server',
 		serverOptions,
 		clientOptions
 	);
+
+	// Configure communicatio1111n trace level.
+	client.trace = Trace.fromString(traceServer);
 
 	// Start the client. This will also launch the server
 	client.start();
