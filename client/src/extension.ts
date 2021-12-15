@@ -36,7 +36,6 @@ export function activate(context: ExtensionContext)
 {
 	let config = vscode.workspace.getConfiguration('Solidity');
 	let solcPath = config.get<string>("solc.path");
-	let solcLogPath = config.get<string>("solc.logpath");
 	let traceServer = config.get<string>("trace.server");
 
 	const builtinSolcPath = context.extensionPath + '/libexec/solc-linux64';
@@ -48,11 +47,6 @@ export function activate(context: ExtensionContext)
 	
 	let solcArgs = [];
 	solcArgs.push('--lsp');
-	if (solcLogPath != null && solcLogPath.trim() != '')
-	{
-		solcArgs.push('--lsp-trace');
-		solcArgs.push(solcLogPath);
-	}
 
 	// If the extension is launched in debug mode then the debug server options are used
 	// Otherwise the run options are used
